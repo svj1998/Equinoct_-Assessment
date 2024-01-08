@@ -1,0 +1,52 @@
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import geopandas as gpd
+import xarray as xr
+
+# List of years
+years = [2018, 2019, 2020, 2021]
+
+# Set up a blank single plot
+fig, ax = plt.subplots(figsize=(12, 8))
+
+# Loop through each year
+for year in years:
+    # File path for the NC file
+    download = f'D:/PPT/ppt_{year}.nc'
+    
+    # Open the dataset
+    ds = xr.open_dataset(download)
+    
+    # Extract time coordinate and precipitation data
+    time_coord = ds['time']
+    precipitation_data = ds['pr']
+    
+    # Read the shapefile
+    shapefile_path = 'D:/Kerala districtshape file.shp'
+    gdf = gpd.read_file(shapefile_path)
+    
+    # Extracting from nc file using shapefile
+    study_area = precipitation_data.sel(
+        lat=slice(gdf.bounds.miny.min(), gdf.bounds.maxy.max()),
+        lon=slice(gdf.bounds.minx.min(), gdf.bounds.maxx.max())
+    )
+    
+    # Mean precipitation for the study area
+    area_mean_precipitation = study_area.mean(dim=['lat', 'lon'])
+    
+    # Mean monthly precipitation for the study area
+    monthly_mean_precipitation = area_mean_precipitation.resample(time='MS').mean()
+    
+    # Plotting Precipiatation change for all the years
+    ax.plot(monthly_mean_precipitation['time.month'], monthly_mean_precipitation, label=f'Year {year}', linewidth=2)
+
+# Setting labels,legend and monthly x-axis and final combined plot.
+ax.set_xlabel('Month')
+ax.set_ylabel('Precipitation (mm)')
+ax.set_title('Precipitation Monthly Average')
+ax.set_xticks(range(1, 13))
+ax.set_xticklabels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
+ax.legend()
+plt.tight_layout()
+plt.savefig("D:/Monthly_Plot.png")
+plt.show()
