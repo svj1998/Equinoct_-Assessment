@@ -1,0 +1,15 @@
+import cdsapi
+api_key = '250666:a0e12b8b-ddf2-411b-99b2-11dae93d79f4'
+c = cdsapi.Client(key=api_key, url="https://cds.climate.copernicus.eu/api/v2")
+request = {
+    'product_type': 'insitu-gridded-observation-global-and-regional',
+    'format': 'netcdf',
+    'variable': 'precipitation',
+    'year': ['2018', '2019', '2020', '2021'], 
+    'time': '00:00',
+    'origin': 'imerg',
+    'version': 'v6.0',
+    'grid': [0.5, 0.5],
+}
+output = 'D:/PPT'
+c.retrieve('insitu-gridded-observation-global-and-regional', request, output)
