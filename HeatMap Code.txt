@@ -1,0 +1,30 @@
+import geopandas as gpd
+import xarray as xr
+import matplotlib.pyplot as plt
+
+# Read dataset
+ds = xr.open_dataset('D:/PPT/ppt_2018.nc')
+
+# Read Shapefile
+gdf = gpd.read_file('D:/Sruthin Tasks/India_State_Shapefile/India_State_Shapefile/India_State_Boundary.shp')  
+
+# Extracting Boundary from shaopefile
+shapefile_extent = gdf.total_bounds
+
+# Extracting precipitation data for Boundary
+ds_subset = ds.sel(lat=slice(shapefile_extent[1], shapefile_extent[3]),
+                   lon=slice(shapefile_extent[0], shapefile_extent[2]))
+
+# Heat Map Plot
+fig, ax = plt.subplots(figsize=(10, 8))
+mean_precipitation = ds_subset['pr'].mean(dim='time')
+im = ax.imshow(mean_precipitation, cmap='viridis', extent=[shapefile_extent[0], shapefile_extent[2], shapefile_extent[1], shapefile_extent[3]], origin='upper', aspect='auto')
+gdf.boundary.plot(ax=ax, edgecolor='black', linewidth=1.5)
+
+# Colorbar
+cbar = plt.colorbar(im, ax=ax, label='Mean Precipitation (mm)')
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+
+plt.title('Mean Precipitation for India 2018')
+plt.show()
